@@ -110,24 +110,40 @@ function main()
 			// Sorts the results in descending order by the Created Date field
 			query = query.addDescending("createdAt");
 
+			document.getElementById("toptext").innerHTML = "Please wait."
+
 			query.first().then(function(object){
 				object.set("x", x);
 				object.set("y", y);
 				console.log(object.get("x") + " " + object.get("y") + " " + object.get("color"));
 				
 				object.save(null, {
-				  success: function(object) {
-				    // Execute any logic that should take place after the object is saved.	    
-				  },
-				  error: function(object, error) {
-				    // Execute any logic that should take place if the save fails.
-				    // error is a Parse.Error with an error code and message.
-				    alert("error occurred while saving");
-				  }
+					success: function(object) {
+					    // Execute any logic that should take place after the object is saved.	
+					    getData(".*");
+						var ctx = drawCanvas();
+
+						// This gives enough time for the data to return
+						setTimeout(function(){
+							document.getElementById("toptext").innerHTML = "Please wait.."
+							setTimeout(function(){
+								document.getElementById("toptext").innerHTML = "Please wait..."
+								setTimeout(function(){
+									drawBlobsInterval(ctx, 0);
+									document.getElementById("toptext").innerHTML = "This is how people around you feel!"
+								}, 1000);
+							}, 1000);
+						}, 1000);
+					},
+					error: function(object, error) {
+				    	// Execute any logic that should take place if the save fails.
+				    	// error is a Parse.Error with an error code and message.
+				    	alert("error occurred while saving");
+					}
 				});
-				
 			});
 			
+			/*
 			document.getElementById("toptext").innerHTML = "Please wait."
 
 			getData(".*");
@@ -144,7 +160,7 @@ function main()
 					}, 1000);
 				}, 1000);
 			}, 1000);
-
+			*/
 		}
 		// console.log(data);
 	});
@@ -155,38 +171,38 @@ function main()
 
 	// for (var i in keysquares)
 		// keysquares[i].draw(ctx);
-}
-
-function applyFilter(name)
-{
-	var filter = getColorRegex(name);
-	console.log("Filtering for: " + filter);
-	currblobs = [];
-	for (var i in blobs)
-	{
-		if (blobs[i].name == null || blobs[i].name.match(filter))
-			currblobs.push(blobs[i]);
 	}
-}
 
-/* Get the existing data from wherever */
-function getData()
-{
-	blobs = [];
-	/* PARSE */
-	Parse.initialize("mEmM0UeRE8GX5hYcuI3Z8Yao4bT4Z7wTWyjOImvt", "G5gLmYiSdDo9YNHF56Rrom15e7VJyGYmUYlcu7f9");
-	var MapPoint = Parse.Object.extend("MapPoint");
-	var query = new Parse.Query(MapPoint);
-	query.each(function(object){
-		blobs.push(new Blob(object.get("x"), object.get("y"), object.get("color"), object.get("name")));
-  	});
-  	currblobs = blobs;
-}
+	function applyFilter(name)
+	{
+		var filter = getColorRegex(name);
+		// console.log("Filtering for: " + filter);
+		currblobs = [];
+		for (var i in blobs)
+		{
+			if (blobs[i].name == null || blobs[i].name.match(filter))
+				currblobs.push(blobs[i]);
+		}
+	}
 
-/* Draws the map onto the canvas */
-function drawCanvas()
-{
-	var canvas = document.getElementById("canvas");
+	/* Get the existing data from wherever */
+	function getData()
+	{
+		blobs = [];
+		/* PARSE */
+		Parse.initialize("mEmM0UeRE8GX5hYcuI3Z8Yao4bT4Z7wTWyjOImvt", "G5gLmYiSdDo9YNHF56Rrom15e7VJyGYmUYlcu7f9");
+		var MapPoint = Parse.Object.extend("MapPoint");
+		var query = new Parse.Query(MapPoint);
+		query.each(function(object){
+			blobs.push(new Blob(object.get("x"), object.get("y"), object.get("color"), object.get("name")));
+		});
+		currblobs = blobs;
+	}
+
+	/* Draws the map onto the canvas */
+	function drawCanvas()
+	{
+		var canvas = document.getElementById("canvas");
 	// console.log("drawCanvas called. width: " + canvas.width + " height: " + canvas.height);
 
 	var ctx = canvas.getContext("2d");
